@@ -1,20 +1,19 @@
 import mongoose from 'mongoose';
-import { env } from './env';
 
-export const connectDB = async () => {
-  // 1. Check if we already have a connection
-  if (mongoose.connection.readyState >= 1) {
-    return; 
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
+export async function connectDB() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.MONGO_URI!);
   }
 
-  try {
-    // 2. Use the URI from your env file
-    // Ensure env.mongoUri is correctly mapping to process.env.MONGO_URI
-    await mongoose.connect(env.mongoUri);
-    console.log('✅ MongoDB connected successfully');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:');
-    // Throw error so the calling function knows the DB is down
-    throw error; 
-  }
-};
+  cached.conn = await cached.promise;
+  console.log('Database connected');
+  return cached.conn;
+}
