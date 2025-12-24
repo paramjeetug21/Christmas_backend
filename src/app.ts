@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
 import { connectDB } from './config/db';
+import userRouter from './modules/user/user.server';
+import router from './modules/massage/message.server';
 
 const app = express();
 
@@ -27,5 +29,10 @@ app.get('/', (req, res) => {
     database: statusMap[mongoose.connection.readyState],
   });
 });
+
+app.use('/users', userRouter);
+app.use('/messages', router);
+
+
 
 export default app;
